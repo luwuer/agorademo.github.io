@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
+import Channel from "../views/Channel/Channel.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,13 +11,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/channel",
     name: "Channel",
-    component: () =>
-      import(/* webpackChunkName: "channel" */ "../views/Channel/Channel.vue")
+    component: Channel
+    // component: () =>
+    //   import(/* webpackChunkName: "channel" */ "../views/Channel/Channel.vue")
   }
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes
 });
 

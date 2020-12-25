@@ -85,7 +85,7 @@ class Agora {
     if (!this.joinReady) return;
     await this.joinReady;
     this.client.unpublish(track);
-  }    
+  }
 
   async createTracks(local: HTMLElement): Promise<boolean> {
     this.micTrackReady = this.createMicTrack();

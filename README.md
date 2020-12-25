@@ -1,4 +1,4 @@
-# agoral-test-cli
+# agoral-demo
 
 ## Project setup
 

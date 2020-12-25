@@ -1,7 +1,12 @@
 <template>
   <div class="one-to-one">
     <Room :name="name" :time="0">
-      <div ref="video-wrapper" class="video-wrapper" :style="{ height }">
+      <div
+        ref="video-wrapper"
+        id="video-wrapper"
+        class="video-wrapper"
+        :style="{ height }"
+      >
         <div ref="local" id="local" class="video-local video-item">
           <!-- <span v-show="isPlaying">我</span> -->
         </div>
@@ -13,7 +18,7 @@
 <script lang="ts">
 import {
   defineComponent,
-  getCurrentInstance,
+  // getCurrentInstance,
   nextTick,
   onMounted,
   ref
@@ -28,7 +33,7 @@ export default defineComponent({
     Room
   },
   setup() {
-    const { ctx } = getCurrentInstance() as any;
+    // const { ctx } = getCurrentInstance() as any;
     const height = ref("0px");
 
     onMounted(() => {
@@ -38,8 +43,11 @@ export default defineComponent({
 
         if (store.state.agora) {
           ((store.state.agora as unknown) as Agora).render(
-            ctx.$refs["local"],
-            ctx.$refs["ideo-wrapper"]
+            // 避免 github page 无法预览（github page 无法识别 ctx ）
+            document.getElementById("local")!,
+            document.getElementById("ideo-wrapper")!
+            // ctx.$refs["local"],
+            // ctx.$refs["ideo-wrapper"]
           );
         }
       });
