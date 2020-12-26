@@ -1,12 +1,7 @@
 <template>
   <div class="one-to-one">
     <Room :name="name" :time="0">
-      <div
-        ref="video-wrapper"
-        id="video-wrapper"
-        class="video-wrapper"
-        :style="{ height }"
-      >
+      <div ref="video-container" id="videoContainer" class="video-container">
         <div ref="local" id="local" class="video-local video-item">
           <!-- <span v-show="isPlaying">我</span> -->
         </div>
@@ -16,13 +11,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  // getCurrentInstance,
-  nextTick,
-  onMounted,
-  ref
-} from "vue";
+import { defineComponent, nextTick, onBeforeUnmount, onMounted } from "vue";
 import Room from "@/components/room/room.vue";
 import store from "@/store";
 import Agora from "@/assets/common/Agora";
@@ -33,34 +22,29 @@ export default defineComponent({
     Room
   },
   setup() {
-    // const { ctx } = getCurrentInstance() as any;
-    const height = ref("0px");
+    const agora: Agora | null = window.agora;
 
     onMounted(() => {
       nextTick(() => {
-        // temporary
-        height.value = `${document.body.clientHeight - 60}px`;
-
-        if (store.state.agora) {
-          ((store.state.agora as unknown) as Agora).render(
-            // 避免 github page 无法预览（github page 无法识别 ctx ）
-            document.getElementById("local")!,
-            document.getElementById("ideo-wrapper")!
-            // ctx.$refs["local"],
-            // ctx.$refs["ideo-wrapper"]
-          );
+        if (agora) {
+          // 直接使用 DOM API 规避无服务状态下 ctx 不识别的问题
+          // const local = ctx.$refs["local"];
+          // const container = ctx.$refs["ideo-wrapper"];
+          const local = document.getElementById("local")!;
+          const container = document.getElementById("videoContainer")!;
+          agora.joinChannel(local, container);
         }
       });
     });
 
+    onBeforeUnmount(() => {
+      agora?.dispose();
+      window.agora = null;
+    });
+
     return {
-      height,
       name: store.state.channel
     };
-  },
-  beforeUnmount() {
-    store.state.agora?.dispose();
-    store.commit("setAgora", null);
   }
 });
 </script>
@@ -73,9 +57,9 @@ export default defineComponent({
   align-items stretch
   width 100%
 
-  .video-wrapper {
-    box-sizing border-box
-    flex 0 0 10.5rem
+  .video-container {
+    display flex
+    width 100%
     padding 0.5rem 0
     overflow-y auto
     background-color $back-light
@@ -86,17 +70,13 @@ export default defineComponent({
       display flex
       justify-content center
       align-items center
-      width 10.5rem
-      height 7rem
-      font-size: 1rem;
+      flex-wrap wrap
+      flex 0 0 21rem
+      height 14rem
+      margin 0 0.1rem
+      font-size 1rem
       background-color $primary
       color $back
-    }
-
-    .video-item {
-      flex 1 1 10.5rem
-      height 7rem
-      margin-bottom 0.1rem
     }
   }
 }

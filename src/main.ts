@@ -27,6 +27,9 @@ app.component(ElInput.name, ElInput);
 app.component(ElTooltip.name, ElTooltip);
 app.component(ElPopper.name, ElPopper);
 app.config.globalProperties.$message = ElMessage;
+window.message = ElMessage;
 
 // init logger
-app.config.globalProperties.$logger = new Logger(config.logLevel as LogLevel);
+const logger = new Logger(config.logLevel as LogLevel);
+app.config.globalProperties.$logger = logger;
+window.logger = logger; // for no server deploy

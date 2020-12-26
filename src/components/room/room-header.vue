@@ -12,7 +12,7 @@
         </el-tooltip>
       </span>
 
-      <span class="setting feat-item">
+      <span class="setting feat-item" style="display: none;">
         <el-tooltip content="打开设置" placement="bottom" effect="light">
           <icon name="icon-setting" />
         </el-tooltip>
@@ -31,15 +31,15 @@
 import Clipboard from "clipboard";
 import {
   defineComponent,
-  getCurrentInstance,
   nextTick,
+  onBeforeUnmount,
   onMounted,
   ref
 } from "vue";
 import Timer from "../timer.vue";
 import Icon from "../icon.vue";
-import store from "@/store";
 import router from "@/router";
+import Agora from "@/assets/common/Agora";
 
 export default defineComponent({
   name: "room-header",
@@ -48,13 +48,13 @@ export default defineComponent({
   },
   components: { Timer, Icon },
   setup() {
-    const { ctx } = getCurrentInstance() as any;
+    const agora: Agora | null = window.agora;
     const href = ref("");
-    let clipboard: any;
+    let clipboard: any = null;
 
     // 退出频道
     function exit() {
-      store.state.agora?.dispose();
+      agora?.dispose();
       router.back();
     }
 
@@ -63,12 +63,12 @@ export default defineComponent({
       clipboard = new Clipboard(".share");
 
       clipboard.on("success", function(e: any) {
-        ctx.$message.success("频道已复制到剪切板");
+        window.message.success("频道已复制到剪切板");
         e.clearSelection();
       });
 
       clipboard.on("error", function(e: any) {
-        ctx.$message.error("复制频道失败");
+        window.message.error("复制频道失败");
         window.logger.log("error", e);
       });
     }
@@ -80,14 +80,15 @@ export default defineComponent({
       });
     });
 
+    onBeforeUnmount(() => {
+      clipboard?.destroy();
+    });
+
     return {
       href,
       clipboard,
       exit
     };
-  },
-  beforeUnmount() {
-    this.clipboard?.destroy();
   }
 });
 </script>

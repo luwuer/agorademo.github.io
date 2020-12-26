@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, reactive, watch } from "vue";
+import { defineComponent, reactive, watch } from "vue";
 import Agora from "@/assets/common/Agora";
 import store from "@/store";
 import router from "@/router";
@@ -34,7 +34,6 @@ type FormInline = {
 export default defineComponent({
   name: "Home",
   setup() {
-    const { ctx } = getCurrentInstance() as any;
     const form: FormInline = reactive({
       appid: DEFAULT.appid,
       token: DEFAULT.token,
@@ -65,14 +64,14 @@ export default defineComponent({
         token: form.token,
         channel: form.channel,
         handleSuccess: uid => {
-          ctx.$logger.log("info", `join channel success, uid: ${uid}`);
+          window.logger.log("info", `join channel success, uid: ${uid}`);
         },
         handleError: err => {
-          ctx.$logger.log("info", `join channel failture, err: ${err}`);
+          window.logger.log("info", `join channel failture, err: ${err}`);
         }
       });
 
-      store.commit("setAgora", agora);
+      window.agora = agora;
       router.push("channel");
     };
 

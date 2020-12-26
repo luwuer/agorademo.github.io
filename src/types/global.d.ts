@@ -8,10 +8,16 @@ interface GlobalConfig {
 }
 
 interface Window {
+  message: {
+    success: Function,
+    error: Function
+  }
   logger: {
     log: Function
   };
+  agora: any
 }
+
 
 let config: GlobalConfig
 

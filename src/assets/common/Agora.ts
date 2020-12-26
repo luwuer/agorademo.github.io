@@ -1,5 +1,6 @@
 import AgoraRTC, {
   IAgoraRTCClient,
+  IAgoraRTCRemoteUser,
   ICameraVideoTrack,
   ILocalTrack,
   IMicrophoneAudioTrack
@@ -30,6 +31,7 @@ class Agora {
   public joinReady: Promise<number | string> | null;
   public micTrackReady: Promise<IMicrophoneAudioTrack> | null;
   public cameraTrackReady: Promise<ICameraVideoTrack> | null;
+  public remoteUsers: Map<string | number, IAgoraRTCRemoteUser>;
   public handleSuccess: (uid?: any) => void;
   public handleError: (err: string) => void;
 
@@ -39,38 +41,32 @@ class Agora {
     this.channel = option.channel;
     this.mode = option.mode || this.mode;
     this.codec = option.codec || this.codec;
-    this.handleSuccess = option.handleSuccess;
-    this.handleError = option.handleError;
     this.micTrack = null;
     this.cameraTrack = null;
     this.joinReady = null;
     this.micTrackReady = null;
     this.cameraTrackReady = null;
+    this.remoteUsers = new Map();
+    this.handleSuccess = option.handleSuccess;
+    this.handleError = option.handleError;
 
     // create client
-    this.client = this._creatClient();
-
-    // join channel
-    this._joinChannel()
-      .then(this.handleSuccess)
-      .catch(this.handleError);
+    this.client = AgoraRTC.createClient({
+      mode: this.mode,
+      codec: this.codec
+    });
   }
 
-  // render stream to video
-  async render(
+  // join channel
+  async joinChannel(
     local: HTMLElement,
     container: HTMLElement
-  ): Promise<{
-    micTrack: IMicrophoneAudioTrack;
-    cameraTrack: ICameraVideoTrack;
-  }> {
+  ): Promise<number | string> {
+    this.joinReady = this.client.join(this.appid, this.channel, this.token);
     await this.createTracks(local);
     this._subscribeRemoteStream(container);
 
-    return {
-      cameraTrack: this.cameraTrack!,
-      micTrack: this.micTrack!
-    };
+    return this.joinReady;
   }
 
   // publish
@@ -99,7 +95,7 @@ class Agora {
     this.micTrack = await callAsyncWithErrorHandle<IMicrophoneAudioTrack>(
       AgoraRTC.createMicrophoneAudioTrack
     );
-    this.micTrack.play();
+    // this.micTrack.play();
     this.publish(this.micTrack);
 
     return this.micTrack;
@@ -139,37 +135,27 @@ class Agora {
   async dispose() {
     this.closeMicTrack();
     this.closeCameraTrack();
+    this.client.leave();
+
     this.client.remoteUsers.forEach(user => {
       const player = document.getElementById(user.uid.toString());
       player && player.remove();
     });
-    this.client.leave();
-  }
-
-  private _creatClient(): IAgoraRTCClient {
-    return AgoraRTC.createClient({
-      mode: this.mode,
-      codec: this.codec
-    });
-  }
-
-  private _joinChannel(): Promise<number | string> {
-    this.joinReady = this.client.join(this.appid, this.channel, this.token);
-    return this.joinReady;
   }
 
   private _subscribeRemoteStream(container: HTMLElement) {
     // create
     this.client.on("user-published", async (user, mediaType) => {
+      this.remoteUsers.set(user.uid, user);
+
       // subscibe remote-user
       await this.client.subscribe(user, mediaType);
 
       if (mediaType === "video") {
         const remoteVideoTrack = user.videoTrack;
+
         const player = document.createElement("div");
         player.id = user.uid.toString();
-        player.style.width = "100%";
-        player.style.height = "100%";
         container.append(player);
 
         remoteVideoTrack!.play(player);
@@ -183,6 +169,8 @@ class Agora {
 
     // destroy
     this.client.on("user-unpublished", (user, mediaType) => {
+      this.remoteUsers.delete(user.uid);
+
       if (mediaType === "video") {
         const player = document.getElementById(user.uid.toString());
         player && player.remove();

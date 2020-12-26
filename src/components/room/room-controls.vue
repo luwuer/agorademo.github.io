@@ -19,6 +19,7 @@
 </template>
 
 <script lang="ts">
+import Agora from "@/assets/common/Agora";
 import store from "@/store";
 import { computed, defineComponent } from "vue";
 import Icon from "../icon.vue";
@@ -29,22 +30,23 @@ export default defineComponent({
     Icon
   },
   setup() {
+    const agora: Agora | null = window.agora;
     const micEnabled = computed(() => store.state.micEnabled);
     const cameraEnabled = computed(() => store.state.cameraEnabled);
 
     // 初始化控制器状态
     async function initStatus() {
-      if (!store.state.agora) return;
+      if (!agora) return;
 
-      const micTrack = store.state.agora.micTrack;
-      const micTrackReady = store.state.agora.micTrackReady;
+      const micTrack = agora.micTrack;
+      const micTrackReady = agora.micTrackReady;
       if (micTrackReady) {
         await micTrackReady;
         store.commit("setMicEnabled", (micTrack as any)._enabled);
       }
 
-      const cameraTrack = store.state.agora.cameraTrack;
-      const cameraTrackReady = store.state.agora.cameraTrackReady;
+      const cameraTrack = agora.cameraTrack;
+      const cameraTrackReady = agora.cameraTrackReady;
       if (cameraTrackReady) {
         store.commit("setCameraEnabled", (cameraTrack as any)._enabled);
       }
@@ -53,9 +55,9 @@ export default defineComponent({
     // 切换麦克风状态
     async function toogleMic() {
       if (micEnabled.value) {
-        store.state.agora?.closeMicTrack();
+        agora?.closeMicTrack();
       } else {
-        store.state.agora?.createMicTrack();
+        agora?.createMicTrack();
       }
 
       store.commit("setMicEnabled", !micEnabled.value);
@@ -64,10 +66,10 @@ export default defineComponent({
     // 切换摄像头状态
     async function toogleCamera() {
       if (cameraEnabled.value) {
-        store.state.agora?.closeCameraTrack();
+        agora?.closeCameraTrack();
       } else {
         const local = document.getElementById("local");
-        local && store.state.agora?.createCameraTrack(local);
+        local && agora?.createCameraTrack(local);
       }
 
       store.commit("setCameraEnabled", !cameraEnabled.value);
