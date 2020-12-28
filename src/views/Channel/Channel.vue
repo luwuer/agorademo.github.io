@@ -59,21 +59,24 @@ export default defineComponent({
 
   .video-container {
     display flex
+    flex-wrap wrap
+    align-content flex-start
     width 100%
     padding 0.5rem 0
     overflow-y auto
     background-color $back-light
     box-shadow 0 2px 2px 0 rgba(77, 77, 77, 0.14), 0 3px 1px -2px rgba(77, 77, 77, 0.2), 0 1px 5px 0 rgba(77, 77, 77, 0.5)
     text-align left
+    font-size 0
 
     &>div {
       display flex
       justify-content center
       align-items center
       flex-wrap wrap
-      flex 0 0 21rem
+      flex 0 1 21rem
       height 14rem
-      margin 0 0.1rem
+      margin 0.1rem
       font-size 1rem
       background-color $primary
       color $back
